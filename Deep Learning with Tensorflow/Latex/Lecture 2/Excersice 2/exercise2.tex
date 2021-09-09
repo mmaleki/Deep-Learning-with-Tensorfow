@@ -1,0 +1,50 @@
+\documentclass[12pt,a4paper]{article} % -*- latex -*-
+\usepackage{geometry,amsmath}
+\usepackage[utf8]{inputenc}
+%\usepackage{xcolor}
+\usepackage{color, colortbl}
+\usepackage{amsfonts}
+\definecolor{LRed}{rgb}{1,.8,.8}
+\definecolor{MRed}{rgb}{1,.6,.6}
+\definecolor{HRed}{rgb}{1,.2,.2}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes,fit,arrows}
+\definecolor{Gray}{gray}{0.9}
+\definecolor{Green}{rgb}{0.3,0.9,0.3}
+\definecolor{Red}{rgb}{0.98,0.3,0.3}
+\usetikzlibrary{automata, positioning, arrows}
+%Information to be included in the title page:
+
+\tikzset{
+        ->,  % makes the edges directed
+        >=stealth', % makes the arrow heads boldnode 
+        distance=3cm, % specifies the minimum distance between two nodes. Change if necessary.
+        every state/.style={thick, fill=gray!10}, % sets the properties for each ’state’ node
+        initial text=$ $, % sets the text that appears on the start arrow
+}
+
+\def\firstcircle{(90:1.75cm) circle (2cm)}
+\def\secondcircle{(210:1.75cm) circle (2cm)}
+\def\thirdcircle{(330:1.75cm) circle (2cm)}
+
+
+\title{Exercise 2\\ Deep Learning}
+\author{Dr. Mehrdad Maleki}
+\date{}
+\begin{document}
+\maketitle
+\begin{enumerate}
+
+\item A cab was involved in a hit-and-run accident at night. Two cab companies, the Green and the Blue, operate in the city. You are given the following data: $85\%$ of the cabs in the city are Green and $15\%$ are Blue. A witness identified the cab as Blue. The court tested the reliability of the witness under the circumstances that existed on the night of the accident and concluded that the witness correctly identified each one of the two colors $80\%$ of the time and failed $20\%$ of the time. What is the probability that the cab involved in the accident was Blue rather than Green?
+
+\item A classification algorithm for recognizing cats can recognize a cat with the accuracy of $80 \%$. Let $\mathbf{X}$ be the random variable of the outcome of this algorithm on different input images. What is the distribution of $\mathbf{X}$? Write the pmf of $\mathbf{X}$.
+
+\item Suppose $\mathbf{X}\sim \mathcal{N}(1,0.4)$. Write a code in Python to calculate,
+\[
+P(1.2\leq \mathbf{X} \leq 1.5)
+\]
+
+\item Using matplotlip,  plot the 5-day moving average for the Open price of Amazon stock price in the period Dec 02, 2019 - Jun 02, 2021. The original AMZN.csv file is in Google Drive.
+\end{enumerate}
+
+\end{document}

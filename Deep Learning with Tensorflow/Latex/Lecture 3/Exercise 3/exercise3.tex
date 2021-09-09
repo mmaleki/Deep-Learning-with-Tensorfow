@@ -1,0 +1,49 @@
+\documentclass[12pt,a4paper]{article} % -*- latex -*-
+\usepackage{geometry,amsmath}
+\usepackage[utf8]{inputenc}
+%\usepackage{xcolor}
+\usepackage{color, colortbl}
+\usepackage{amsfonts}
+\definecolor{LRed}{rgb}{1,.8,.8}
+\definecolor{MRed}{rgb}{1,.6,.6}
+\definecolor{HRed}{rgb}{1,.2,.2}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes,fit,arrows}
+\definecolor{Gray}{gray}{0.9}
+\definecolor{Green}{rgb}{0.3,0.9,0.3}
+\definecolor{Red}{rgb}{0.98,0.3,0.3}
+\usetikzlibrary{automata, positioning, arrows}
+%Information to be included in the title page:
+
+\tikzset{
+        ->,  % makes the edges directed
+        >=stealth', % makes the arrow heads boldnode 
+        distance=3cm, % specifies the minimum distance between two nodes. Change if necessary.
+        every state/.style={thick, fill=gray!10}, % sets the properties for each ’state’ node
+        initial text=$ $, % sets the text that appears on the start arrow
+}
+
+\def\firstcircle{(90:1.75cm) circle (2cm)}
+\def\secondcircle{(210:1.75cm) circle (2cm)}
+\def\thirdcircle{(330:1.75cm) circle (2cm)}
+
+
+\title{Exercise 3\\ Deep Learning}
+\author{Dr. Mehrdad Maleki}
+\date{Deadline: 17-June-2021}
+\begin{document}
+\maketitle
+\begin{enumerate}
+
+\item If $z=x^2+y^2$ and $x=2cos(t)$ and $y=2sin(t)$ then compute $\frac{dz}{dt}$ at $t=\pi$.
+\item What is the gradient of the function $f(x_1,x_2)=x_1^2+x_2^2$ at $(1,2)$?
+\item In which direction we have maximum directional derivative for the function $f(x_1,x_2)=x_1x_2+x_2^3$ at $(2,3)$?
+\item Compute the Jacobian of the $f(x_1,x_2,x_3)=(x1x2,x_1^2+x_2^2+x_3^2)$ at $(1,2,1)$.
+
+\item  Let $\sigma(z) =\frac{1}{1+e^{-z}}$, calculate $\sigma'(z)$ with respect to $\sigma(z)$.(you need to show all the steps of calculations!)
+
+\item  Let $\tanh (z) =\frac{e^z-e^{-z}}{e^z+e^{-z}}$, calculate $\tanh'(z)$ with respect to $\tanh(z)$. (you need to show all the steps of calculations!)
+
+\end{enumerate}
+
+\end{document}

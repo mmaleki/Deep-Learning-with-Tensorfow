@@ -1,0 +1,529 @@
+\documentclass[12pt,aspectratio=169]{beamer}
+
+
+\usepackage{algorithm,algorithmic}
+
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs}
+\usepackage[opacity=0.1]{pdfcomment} % set to 0 to make annotation icons invisible
+\usepackage{pdfpc}
+\usepackage{arev}
+\usepackage{multicol}
+
+\usepackage{xcolor, color, colortbl}
+\definecolor{dkgreen}{rgb}{0,0.5,0}
+\definecolor{dkred}{rgb}{0.8,0,0}
+\definecolor{dkblue}{rgb}{0,0,0.5}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{hilight}{RGB}{122,86,0}
+
+\definecolor{LRed}{rgb}{1,.8,.8}
+\definecolor{MRed}{rgb}{1,.6,.6}
+\definecolor{HRed}{rgb}{1,.2,.2}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,
+                calc, chains,
+                quotes,
+                positioning,
+                shapes.geometric}
+
+
+\def\scalefact{0.85}
+\newcommand{\cev}[1]{\reflectbox{\ensuremath{\vec{\reflectbox{\ensuremath{#1}}}}}}
+\newcommand{\evalat}[2]{\left.#1\right\vert_{#2}}
+
+\newcommand{\znode}[5][black]{\path (#3,#4) node(#2) [circle,draw,color=#1] {#5};}
+\newcommand{\zunedge}[6][black]{%
+\begin{scope}
+	\path (#2,#3) node(this) [inner sep=0pt,triangle,draw,color=#1] {#4};
+	\draw[->,color=#1] (#5) -- (this.west);
+	\draw[->,color=#1] (this.east) -- (#6);
+\end{scope}}
+\newcommand{\zbiedge}[7][black]{%
+\begin{scope}
+	\path (#2,#3) node(this) [inner sep=0pt,triangle,draw,color=#1] {#4};
+	\draw[->,color=#1] (#5) -- (this);
+	\draw[->,color=#1] (#6) -- (this);
+	\draw[->,color=#1] (this.east) -- (#7);
+\end{scope}}
+\newcommand{\zedge}[5][black]{\path (#3,#4) node(#2) [inner sep=0pt,triangle,draw,color=#1] {#5};}
+
+\definecolor{blue(pigment)}{rgb}{0.2, 0.2, 0.6}
+\definecolor{burgundy}{rgb}{0.5, 0.0, 0.13}
+
+
+\usepackage{listings}
+%% \usetheme{Goettingen}
+\usefonttheme{serif}
+\usepackage{times}
+\setbeamertemplate{navigation symbols}{}
+
+\title{Deep Learning}
+\subtitle{Lecture 3: Calculus}
+ 
+ 
+%\author[Mehrdad Maleki] % (optional, for multiple authors)
+%{Mehrdad Maleki, Barak A. Pearlmutter\footnote{ Institute & Department of Computer Science
+%Maynooth University, Co. Kildare, Ireland}, Jeffrey Mark Siskind}
+ 
+%\institute[NUIM] % (optional)
+%{
+%  Department of Computer Science \\
+%  National University of Ireland Maynooth
+ 
+%}
+%
+\author[]{\textbf{Dr. Mehrdad Maleki}}
+%\institute[]{\textsuperscript{1}Department of Computer Science\\ National University of Ireland\\ Maynooth}
+ 
+\date{}
+ 
+%\logo{\includegraphics[height=1.5cm]{lion-logo.png}}
+
+\renewcommand{\Re}{\mathbb{R}}
+
+\newcommand{\at}[2][]{#1|_{#2}}
+\newcommand{\tens}[1]{%
+  \mathbin{\mathop{\otimes}\limits_{#1}}%
+}
+\begin{document}
+ 
+\frame{\titlepage}
+
+\begin{frame}
+A function $f:X\to Y$ is given. \pause Then the derivative of $f$ at $x_0\in X$ means that if $x_0$ changes a little bit, how $f(x_0)$ changes accordingly. \pause For example if the radius of a balloon of radius 50 cm change to  55 cm, how much change we have in the volume of the baloon? \pause Since $V=\frac{4}{3}\pi\,R^3$ then $\frac{dV}{dR}=4\pi\,R^2$. \pause So $V_2-V_1\approx\frac{dV}{dR}(R_2-R_1)$. \pause Since $R_2-R_1=5$ and $\frac{dV}{dR}|_{R=50}=4\pi\times 50^2\approx 31400$. So $V_2-V_1\approx 31400*5=157000\, cm^3$ but $V_1\approx 52333$ and $V_2\approx 157000+52333$ thus $\frac{V_2}{V_1}=\frac{209333}{52333}\approx 4$. Hence, the volume of the sphere increases by a factor of 4 if the radius of the sphere is increased by 5 cm.
+\end{frame}
+
+\begin{frame}
+In one dimensional case when we have a scalar function of one variable $y=f(x)$ we can plot this on the $x-y$ coordinate and the slop of to the graph of the function at point $x_0$ is the derivative of $f$ at $x_0$ and it is denoted by $f'(x_0)$ or $\frac{dy}{dx}\at[\big]{x=x_0}$.
+\begin{figure}
+\begin{tikzpicture}
+\draw[->] (-5,0) -- (5,0) node[below] {$x$};
+ \draw[->] (0,-1)-- (0,5) node[left] {$y$};
+ \draw [red,thick] plot [smooth,samples=200, tension=1] coordinates { 
+   (-5,-1) (-2.7,1) (-0.5,1.85) (2.5,4) (4,1) (5,3)};\pause
+ \draw[ultra thick, green] (-5,-0.9) -- (-3,1);\pause
+ \draw[ultra thick, green] (-2.5,1.4) -- (-1,1.4);\pause
+ \draw[ultra thick, green] (1.5,4.05) -- (3,4.05);\pause
+ \draw[ultra thick, green] (3.5,0.95) -- (5,0.95);\pause
+ 
+
+ \node[above] at (-4,0) {$A$};
+  \filldraw [red] (-4,0) circle (2pt);\pause
+ \node[above] at (-1.6,1.4) {$B$};
+  \filldraw [red] (-1.6,1.4) circle (2pt);\pause
+ \node[above] at (2.2,4.05) {$C$};
+   \filldraw [red] (2.2,4.05) circle (2pt);\pause
+ \node[above] at (4.1,0.95) {$D$};
+    \filldraw [red] (4.1,0.95) circle (2pt);
+   
+   
+ \end{tikzpicture}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Chain Rule}
+If $y=f(z)$ and $z=g(x)$ then $y=h(x)$. The derivative of $y$ with respect to $x$ is, \pause
+\[
+\frac{dy}{dx}=\pause\frac{dy}{dz}\pause\frac{dz}{dx}
+\]\pause
+or equivalently,
+\[
+\begin{aligned}
+h'(x)&=\pause f'(z)\pause g'(x)\\ \pause
+&=f'(g(x))\pause g'(x)
+\end{aligned}
+\]
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Important Functions}
+\[
+\begin{aligned}
+f(x)=x^n & \pause\Rightarrow f'(x)=nx^{n-1}\\  \pause
+f(x)=\sin (x) &\pause\Rightarrow f'(x)=\cos (x)\\ \pause
+f(x)=\cos (x) &\pause\Rightarrow f'(x)=-\sin (x)\\ \pause
+f(x)=e^x &\pause\Rightarrow f'(x)=e^x\\ \pause
+f(x)=\log (x) &\pause\Rightarrow f'(x)=\frac{1}{x}
+\end{aligned}
+\]
+\end{frame}
+
+\begin{frame}
+\frametitle{Derivative Ruels}
+\[
+\begin{aligned}
+&(u(x)+v(x))'\pause =u'(x)+v'(x)\\ \pause
+&(u(x)v(x))'\pause =u'(x)v(x)+u(x)v'(x)\\ \pause
+&(cu(x))'\pause =cu'(x) 
+\end{aligned}
+\]
+\end{frame}
+
+\begin{frame}
+\frametitle{Chain Rule of multi-variables}
+If $y=f(z_1,\dots,z_n)$ and $z_i=g_i(x)$ then $y=h(x)$ and we have,\pause
+\[
+\begin{aligned}
+\frac{dy}{dx}&=\pause\frac{\partial y}{\partial z_1}\frac{dz_1}{dx}\pause+\dots+\pause\frac{\partial y}{\partial z_n}\frac{dz_n}{dx}\\ 
+& \pause=\frac{\partial y}{\partial z_1}g_1'(x)\pause+\dots+\pause \frac{\partial y}{\partial z_n}g_n'(x)
+\end{aligned}
+\]
+\end{frame}
+
+\begin{frame}
+\frametitle{Example}
+Let $y=z_1^2+z_2^2$ and $z_1=log(x)$, $z_2=sin(x)$ then $\frac{dy}{dx}\at[\big]{x=1}$ is\pause
+\[
+\begin{aligned}
+\frac{dy}{dx}&=\pause\frac{\partial y}{\partial z_1}\frac{dz_1}{dx}\pause+\frac{\partial y}{\partial z_2}\frac{dz_2}{dx}\\
+&=\pause (2z_1)(\frac{1}{x})\pause+(2z_2)(cos(x))\\
+&=\pause(2\times 0)(\frac{1}{1})\pause+(2\times \sin 1)(\cos 1)\\
+&=\pause sin(2)\\
+&\approx \pause 0.034899497
+\end{aligned}
+\]
+\end{frame}
+
+\begin{frame}
+If $f:\Re^n\to \Re$, i.e., $y=f(x_1,\dots,x_n)$, i.e., scalar $y$ depends on reals $x_1, \dots, x_n$, then the \textbf{Gradient} of $f$ at $\mathbf{x_0}$ is \pause
+\[
+\nabla f(\mathbf{x_0})=
+\begin{bmatrix}
+\frac{\partial y}{\partial x_1}\at[\big]{\mathbf{x_0}}\\
+\vdots \\
+\frac{\partial y}{\partial x_n}\at[\big]{\mathbf{x_0}}
+\end{bmatrix}
+\] 
+\end{frame}
+
+\begin{frame}
+$y=x_1+x_2$, then if $y=sum(x_1,x_2)$ then the Gradient of $sum$ at $\mathbf{x_0}=(2,3)$ is, \pause
+\[
+\begin{aligned}
+\nabla sum(2,3)&= \pause \begin{bmatrix}
+\frac{\partial sum}{\partial x_1}\\
+\frac{\partial sum}{\partial x_2}
+\end{bmatrix} \\ \pause
+& =\begin{bmatrix}
+1\\
+1
+\end{bmatrix}
+\end{aligned}
+\]
+\end{frame}
+
+\begin{frame}
+\frametitle{Directional Derivative}
+Let $\mathbf{u}\in \Re^n$ and $\|\mathbf{u}\|=1$, then the \textbf{Directional Derivative} of $f$ in the direction of $\|\mathbf{u}\|$ in $\mathbf{x_0}$ is denoted by $\mathcal{D}_{\mathbf{u}}f(\mathbf{x_0})$ and is define by,\pause
+\[
+\mathcal{D}_{\mathbf{u}}f(\mathbf{x_0})=\nabla f(\mathbf{x_0})\cdot \mathbf{u}
+\]
+\end{frame}
+
+\begin{frame}
+In which direction, we have maximum Directional Derivative? \pause
+If we choose $\mathbf{u}=\frac{\nabla f(\mathbf{x_0})}{\|\nabla f(\mathbf{x_0})\|}$ then we have maximum directional derivative and \pause in the direction of $-\mathbf{u}$ we have minimum directional derivative.
+\end{frame}
+
+\begin{frame}
+What is the directional derivative of the funcion $f(x_1,x_2)=x_1^2+x_2^2$ in the direction of $\mathbf{u}=\frac{1}{25}(3,4)$ in $\mathbf{x_0}=(1,1)$?\pause
+
+Since $\nabla f(x_1,x_2)=\begin{bmatrix}
+2x_1\\
+2x_2
+\end{bmatrix}$ then,\pause
+\[
+\begin{aligned}
+\mathcal{D}_{\mathbf{u}}f(x_1,x_2)&=\nabla f(x_1,x_2)\cdot \mathbf{u}\\ \pause
+&=\begin{bmatrix}
+2\\
+2
+\end{bmatrix} \cdot \frac{1}{25}\begin{bmatrix}
+3\\
+4
+\end{bmatrix}  \\ \pause
+&=\frac{14}{25}\\ \pause
+&=0.56
+\end{aligned}
+\] \pause
+while $\mathcal{D}_{\frac{\nabla f(\mathbf{x_0})}{\|\nabla f(\mathbf{x_0})\|}}f(x_1,x_2)=\|\nabla f(\mathbf{x_0})\|\approx 2.82$
+\end{frame}
+
+\begin{frame}
+\frametitle{Jacobian}
+For a function $f:\Re^n\to \Re^m$, such that $(y_1,\dots,y_m)=f(x_1,\dots,x_n)$, the \textbf{Jacobian} of $f$ at $\mathbf{x_0}$ is a $m\times n$ matrix and denoted by $\mathbf{J}_f(\mathbf{x_0})$ and is defined as follow:\pause
+\[
+\mathbf{J}_f(\mathbf{x_0})=\pause
+\begin{bmatrix}
+\frac{\partial y_1}{\partial x_1}\at[\big]{\mathbf{x_0}} & \dots & \frac{\partial y_1}{\partial x_n}\at[\big]{\mathbf{x_0}} \\ \pause
+\vdots & \ddots & \vdots \\ \pause
+\frac{\partial y_m}{\partial x_1}\at[\big]{\mathbf{x_0}} & \dots & \frac{\partial y_m}{\partial x_n}\at[\big]{\mathbf{x_0}}
+\end{bmatrix}
+\] \pause
+another notation, \pause
+\[
+\mathbf{J}_f(\mathbf{x_0})=\pause\frac{\partial (y_1,\dots,y_m)}{\partial (x_1,\dots, x_n)}\at[\big]{\mathbf{x_0}}
+\]
+\end{frame}
+
+\begin{frame}
+When $m=1$ then the Jacobian of $f:\Re^n\to \Re$ is a row vector and its transpos is the gradient of $f$, i.e.,\pause
+\[
+\mathbf{J}_f(\mathbf{x})=(\nabla f(\mathbf{x}))^T
+\]
+\end{frame}
+
+\begin{frame}
+Let $f(x_1,x_2)=(x1x2,sin(x_1),cos(x_2))$. What is $\mathbf{J}_f(2,3)$?\pause
+\[
+\begin{aligned}
+\mathbf{J}_f(2,3)&=\pause
+\begin{bmatrix}
+\frac{\partial (x_1x_2)}{\partial x_1}\at[\big]{(2,3)} & \frac{\partial (x_1x_2)}{\partial x_2}\at[\big]{(2,3)}\\ \pause
+\frac{\partial (sin(x_1))}{\partial x_1}\at[\big]{(2,3)} & \frac{\partial (sin(x_1))}{\partial x_2}\at[\big]{(2,3)}\\ \pause
+\frac{\partial (cos(x_2))}{\partial x_1}\at[\big]{(2,3)} & \frac{\partial (cos(x_2))}{\partial x_2}\at[\big]{(2,3)}
+\end{bmatrix}\\ \pause
+&=\begin{bmatrix}
+x_2\at[\big]{(2,3)} & x_1\at[\big]{(2,3)}\\ \pause
+cos(x_1)\at[\big]{(2,3)} & 0\at[\big]{(2,3)}\\ \pause
+0\at[\big]{(2,3)} & -sin(x_2)\at[\big]{(2,3)} \pause
+\end{bmatrix}\\
+&=\begin{bmatrix}
+3 & 2\\ \pause
+0.99 & 0\\ \pause
+0 & -0.05
+\end{bmatrix}
+\end{aligned}
+\]
+\end{frame}
+
+
+\begin{frame}
+Let define $f(\mathbf{x})=\mathbf{x}^T\mathbf{a}$, where $\mathbf{a}:\Re^n$ is a constant vector. Then $f:\Re^n\to \Re$. What is the Jacobian of $f$ at $\mathbf{x_0}$? \pause
+\[
+\begin{aligned}
+f(\mathbf{x_0})&=\pause
+\begin{bmatrix}
+x_1 & \dots & x_n
+\end{bmatrix}\pause
+\begin{bmatrix}
+a_1 \\
+\vdots\\
+a_n
+\end{bmatrix}\\ \pause
+&=x_1a_1+\dots +x_na_n
+\end{aligned}
+\]
+\end{frame}
+
+
+\begin{frame}
+\[
+\begin{aligned}
+\mathbf{J}_f(\mathbf{x_0})&=
+\begin{bmatrix}
+\frac{\partial (x_1a_1+\dots + x_na_n)}{\partial x_1} & \dots & \frac{\partial (x_1a_1+\dots + x_na_n)}{\partial x_n}\\ 
+\end{bmatrix}\\ \pause
+&=\begin{bmatrix}
+a_1 & \dots & a_n
+\end{bmatrix}\\ \pause
+&=\mathbf{a}^T
+\end{aligned}
+\]
+\end{frame}
+
+
+
+\begin{frame}
+Let define $f(\mathbf{x})=\mathbf{a}^T\mathbf{x}$, where $\mathbf{a}:\Re^n$ is a constant vector. Then $f:\Re^n\to \Re$. What is the Jacobian of $f$ at $\mathbf{x_0}$?\pause
+\[
+\begin{aligned}
+f(\mathbf{x_0})&=\pause
+\begin{bmatrix}
+a_1 & \dots & a_n
+\end{bmatrix}\pause
+\begin{bmatrix}
+x_1 \\
+\vdots\\
+x_n
+\end{bmatrix}\\ \pause
+&=x_1a_1+\dots +x_na_n
+\end{aligned}
+\]
+\end{frame}
+
+
+\begin{frame}
+\[
+\begin{aligned}
+\mathbf{J}_f(\mathbf{x_0})&=
+\begin{bmatrix}
+\frac{\partial (x_1a_1+\dots + x_na_n)}{\partial x_1} & \dots & \frac{\partial (x_1a_1+\dots + x_na_n)}{\partial x_n}\\ 
+\end{bmatrix}\\ \pause
+&=\begin{bmatrix}
+a_1 & \dots & a_n
+\end{bmatrix}\\ \pause
+&=\mathbf{a}^T
+\end{aligned}
+\]
+\end{frame}
+
+\begin{frame}
+Let $\mathbf{W}_{m\times n}$ be a constant matrix and let define $f(\mathbf{x})=\mathbf{W}\mathbf{x}$. Then $f:\Re^n\to \Re^m$. What is the Jacobian of $f$ at $\mathbf{x_0}$?
+\[
+\begin{aligned}
+f(\mathbf{x})&=\pause\begin{bmatrix}
+w_{11} & \dots & w_{1n}\\ \pause
+\vdots & \ddots & \vdots\\ \pause
+w_{m1} & \dots & w_{mn} \pause
+\end{bmatrix}
+\begin{bmatrix}
+x_1\\ \pause
+\vdots\\ \pause
+x_n 
+\end{bmatrix}\\ \pause
+&=\begin{bmatrix}
+w_{11}x_1+\dots + w_{1n}x_n\\ \pause
+\vdots\\ \pause
+w_{m1}x_1+\dots+w_{mn}x_n
+\end{bmatrix}
+\end{aligned}
+\]
+\end{frame}
+
+\begin{frame}
+
+\[
+\begin{aligned}
+\mathbf{J}_f(\mathbf{x_0})&=
+\begin{bmatrix}
+\frac{\partial (w_{11}x_1+\dots + w_{1n}x_n)}{\partial x_1} & \dots & \frac{\partial (w_{11}x_1+\dots + w_{1n}x_n)}{\partial x_n}\\ \pause
+\vdots & \ddots & \vdots\\ \pause
+\frac{\partial (w_{m1}x_1+\dots+w_{mn}x_n)}{\partial x_1} & \dots & \frac{\partial (w_{m1}x_1+\dots+w_{mn}x_n)}{\partial x_n}
+\end{bmatrix}\\ \pause
+&=\begin{bmatrix}
+w_{11} & \dots & w_{1n}\\ \pause
+\vdots & \ddots & \vdots\\ \pause
+w_{m1} & \dots & w_{mn}
+\end{bmatrix}\\ \pause
+&=\mathbf{W}
+\end{aligned}
+\]
+\end{frame}
+
+\begin{frame}
+Let $f:\mathbb{R}^n\to \mathbb{R}$ be a quadratic map defined by $f(\mathbf{x})=\mathbf{x}^T\mathbf{A}\mathbf{x}$, where $A$ is a symmetric matrix of dimension $(n\times n)$. \pause
+ Since matrix multiplication is associative we can see $f$ as the multiplication of two matrix $\mathbf{x}^T$ and $\mathbf{y}(\mathbf{x})=\mathbf{A}\mathbf{x}$. \pause Note that the matrix multiplication is exactly the function composition! \pause
+ So $f(\mathbf{x})=h(\mathbf{x},\mathbf{y})=\mathbf{x}^T\mathbf{y}$ and if we apply the chaine rule to $h$ we have:
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+\begin{tikzpicture}[
+roundnode/.style={circle, draw=green!60, fill=green!5, very thick, minimum size=7mm},
+]
+%Nodes
+\node[roundnode] (h) at (0,0) {$h$};\pause
+\node[roundnode] (x1) at (-2,-2) {$x$};\pause
+\node[roundnode] (y) at (2,-2) {$y$};\pause
+\node[roundnode] (x2) at (0,-4) {$x$};\pause
+
+%Lines
+\draw[->] (h.west) .. controls +(left:7mm) and +(north:7mm) .. (x1.north);\pause
+\node[above] at (-1,-1) {$\frac{\partial h}{\partial x}$};\pause
+\draw[->] (h.east) .. controls +(right:7mm) and +(north:7mm) .. (y.north);\pause
+\node[above] at (1,-1) {$\frac{\partial h}{\partial y}$};\pause
+\draw[->] (x1.south) .. controls +(south:7mm) and +(west:7mm) .. (x2.west);\pause
+\node[below] at (-1,-3) {$\frac{d x}{d x}$};\pause
+\draw[->] (y.south) .. controls +(south:7mm) and +(east:7mm) .. (x2.east);\pause
+\node[below] at (1,-3) {$\frac{d y}{d x}$};
+
+\end{tikzpicture}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+ 
+ $$\begin{aligned}
+ \frac{\partial f(\mathbf{x})}{\partial \mathbf{x}}&=\frac{\partial h(\mathbf{x},\mathbf{y})}{\partial \mathbf{x}}\\ \pause
+ &=\frac{\partial h}{\partial \mathbf{x}}\frac{\partial \mathbf{x}}{\partial \mathbf{x}}+\frac{\partial h}{\partial \mathbf{y}}\frac{\partial \mathbf{y}}{\partial \mathbf{x}}\\ \pause
+ &=\mathbf{y}^T+\mathbf{x}^T\mathbf{A}\\ \pause
+ &=(\mathbf{A}\mathbf{x})^T+\mathbf{x}^T\mathbf{A}\\ \pause
+ &=\mathbf{x}^T\mathbf{A}^T+\mathbf{x}^T\mathbf{A}\\ \pause
+ &=\mathbf{x}^T(\mathbf{A}^T+\mathbf{A})\\ \pause
+ &=2\mathbf{x}^T\mathbf{A}
+ \end{aligned}$$
+ 
+ The last equality holds because $\mathbf{A}$ is symmetric, i.e., $\mathbf{A}^T=\mathbf{A}$
+\end{frame}
+
+
+
+
+
+\begin{frame}
+Let $f:\Re^{m\times n}\to \Re^n$ with $f(\mathbf{W})=\mathbf{W}\mathbf{x}$ for a fixed $\mathbf{x}:\Re^n$. Then,
+\[
+\begin{aligned}
+f(\mathbf{W})&=\pause\begin{bmatrix}
+w_{11} & \dots & w_{1n}\\ \pause
+\vdots & \ddots & \vdots\\ \pause
+w_{m1} & \dots & w_{mn} \pause
+\end{bmatrix}
+\begin{bmatrix}
+x_1\\ \pause
+\vdots\\ \pause
+x_n 
+\end{bmatrix}\\ \pause
+&=\begin{bmatrix}
+w_{11}x_1+\dots + w_{1n}x_n\\ \pause
+\vdots\\ \pause
+w_{m1}x_1+\dots+w_{mn}x_n
+\end{bmatrix}
+\end{aligned}
+\]
+\end{frame}
+
+
+
+\begin{frame}
+
+\[
+\begin{aligned}
+\mathbf{J}_f(\mathbf{W_0})&=
+\begin{bmatrix}
+\frac{\partial (w_{11}x_1+\dots + w_{1n}x_n)}{\partial w_{11}} & \dots & \frac{\partial (w_{11}x_1+\dots + w_{1n}x_n)}{\partial w_{mn}}\\ \pause
+\vdots & \ddots & \vdots\\ \pause
+\frac{\partial (w_{m1}x_1+\dots+w_{mn}x_n)}{\partial w_{11}} & \dots & \frac{\partial (w_{m1}x_1+\dots+w_{mn}x_n)}{\partial w_{mn}}
+\end{bmatrix}\\ \pause
+&=\begin{bmatrix}
+x_1 & \dots & x_n & 0 & \dots & 0 & \dots & 0 & \dots & 0\\ \pause
+0 & \dots & 0 & x_1 & \dots & x_n & \dots & 0 & \dots & 0  \\ \pause
+\vdots & \ddots & \vdots & \vdots & \ddots & \vdots & \ddots & \vdots & \ddots & \vdots \\
+0 & \dots & 0 & 0 & \dots & 0 & \dots & x_1 & \dots & x_n 
+\end{bmatrix}\\ \pause
+&=\begin{bmatrix}
+x_1 & \dots x_n
+\end{bmatrix}
+\tens{} \mathbf{I}_m\\ \pause
+&=\mathbf{x}\tens{} \mathbf{I}_m
+\end{aligned}
+\]
+\end{frame}
+
+
+
+
+\begin{frame}{}
+  \centering \Huge
+  \emph{Thank You}
+\end{frame}
+
+\end{document}
+

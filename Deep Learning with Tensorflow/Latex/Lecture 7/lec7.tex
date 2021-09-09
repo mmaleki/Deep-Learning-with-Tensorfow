@@ -1,0 +1,512 @@
+\documentclass[12pt,aspectratio=169]{beamer}
+
+
+\usepackage{algorithm,algorithmic}
+
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs}
+\usepackage[opacity=0.1]{pdfcomment} % set to 0 to make annotation icons invisible
+\usepackage{pdfpc}
+\usepackage{arev}
+\usepackage{multicol}
+
+\usepackage{xcolor, color, colortbl}
+\definecolor{dkgreen}{rgb}{0,0.5,0}
+\definecolor{dkred}{rgb}{0.8,0,0}
+\definecolor{dkblue}{rgb}{0,0,0.5}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{hilight}{RGB}{122,86,0}
+
+\definecolor{LRed}{rgb}{1,.8,.8}
+\definecolor{MRed}{rgb}{1,.6,.6}
+\definecolor{HRed}{rgb}{1,.2,.2}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,
+                calc, chains,
+                quotes,
+                positioning,
+                shapes.geometric}
+
+
+\def\scalefact{0.85}
+\newcommand{\cev}[1]{\reflectbox{\ensuremath{\vec{\reflectbox{\ensuremath{#1}}}}}}
+\newcommand{\evalat}[2]{\left.#1\right\vert_{#2}}
+
+\newcommand{\znode}[5][black]{\path (#3,#4) node(#2) [circle,draw,color=#1] {#5};}
+\newcommand{\zunedge}[6][black]{%
+\begin{scope}
+	\path (#2,#3) node(this) [inner sep=0pt,triangle,draw,color=#1] {#4};
+	\draw[->,color=#1] (#5) -- (this.west);
+	\draw[->,color=#1] (this.east) -- (#6);
+\end{scope}}
+\newcommand{\zbiedge}[7][black]{%
+\begin{scope}
+	\path (#2,#3) node(this) [inner sep=0pt,triangle,draw,color=#1] {#4};
+	\draw[->,color=#1] (#5) -- (this);
+	\draw[->,color=#1] (#6) -- (this);
+	\draw[->,color=#1] (this.east) -- (#7);
+\end{scope}}
+\newcommand{\zedge}[5][black]{\path (#3,#4) node(#2) [inner sep=0pt,triangle,draw,color=#1] {#5};}
+
+\definecolor{blue(pigment)}{rgb}{0.2, 0.2, 0.6}
+\definecolor{burgundy}{rgb}{0.5, 0.0, 0.13}
+
+
+\usepackage{listings}
+%% \usetheme{Goettingen}
+\usefonttheme{serif}
+\usepackage{times}
+\setbeamertemplate{navigation symbols}{}
+
+\title{Deep Learning}
+\subtitle{Lecture 7: Backpropagation}
+ 
+ 
+%\author[Mehrdad Maleki] % (optional, for multiple authors)
+%{Mehrdad Maleki, Barak A. Pearlmutter\footnote{ Institute & Department of Computer Science
+%Maynooth University, Co. Kildare, Ireland}, Jeffrey Mark Siskind}
+ 
+%\institute[NUIM] % (optional)
+%{
+%  Department of Computer Science \\
+%  National University of Ireland Maynooth
+ 
+%}
+
+\author[]{\textbf{Dr. Mehrdad Maleki}}
+%\institute[]{\textsuperscript{1}Department of Computer Science\\ National University of Ireland\\ Maynooth}
+ 
+\date{}
+ 
+%\logo{\includegraphics[height=1.5cm]{lion-logo.png}}
+
+\renewcommand{\Re}{\mathbb{R}}
+ 
+\begin{document}
+ 
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Notations}
+\begin{center}
+\begin{tikzpicture}
+\foreach \x in {0,4}
+  \foreach \y in {-2,-1,0,1,2}
+    \draw[ultra thick, blue!50] (\x,\y) circle (10pt);
+
+  \foreach \y in {-2,-1,0,1,2}
+       \draw[->] (0.4,\y) -- (3.65,0);
+  \draw[->] (4.35,0) -- (5,0);\pause
+
+\node[red!70] at (0,3) {$l-1$};
+\node[red!70] at (4,3) {$l$};\pause
+
+\node[opacity=0.3] at (0,-3) {$m$};
+\node[opacity=0.3] at (4,-3) {$n$};\pause
+
+\node[brown] at (2,2.5) {$W^{(l)}$};\pause
+
+\node[] at (0,0) {$i$};\pause
+\node[] at (4,0) {$j$};\pause
+
+\node[brown!50] at (2,0) {$w_{ij}^{(l)}$};\pause
+
+\node[blue!50] at (1,0) {$y_i^{(l-1)}$};\pause
+
+\node[pink] at (3.65,0.3) {$z_j^{(l)}$};\pause
+
+\node[blue!50,right] at (5,0) {$y_j^{(l)}=f_j^{(l)}(z_j^{(l)})$};
+
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+
+\begin{frame}
+\begin{itemize}
+\item $z_j^{(l)}=\sum_{k=1}^m y_k^{(l-1)}w_{kj}^{(l)}+b_j^{(l)}$\pause
+\bigskip
+\item $y_j^{(l)}=f_j^{(l)}(z_j^{(l)})$\pause
+\bigskip
+\item $y_j^{(0)}=x_j$ the $j$-th input.\pause
+\bigskip
+\item $y_j^{(L)}=$ the $j$-th output.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Matrix form}
+\begin{itemize}
+\item For $l=1,\dots, L$,
+\[
+\mathbf{z}^{(l)}=
+\begin{bmatrix}
+z_1^{(l)}\\
+\vdots\\
+z_{m_l}^{(l)}
+\end{bmatrix}
+\]\pause
+\[
+\mathbf{b}^{(l)}=
+\begin{bmatrix}
+b_1^{(l)}\\
+\vdots\\
+b_{m_l}^{(l)}
+\end{bmatrix}
+\]\pause
+\item For $l=0,\dots, L$,
+\[
+\mathbf{y}^{(l)}=
+\begin{bmatrix}
+y_1^{(l)}\\
+\vdots\\
+y_{m_l}^{(l)}
+\end{bmatrix}
+\]
+\end{itemize}
+where $m_l$ is the number of neurons in layer $l$.
+\end{frame}
+
+\begin{frame}
+The weight matrix between layer $l-1$ and $l$ which is a $m_{l-1}\times m_l$ matrix as follow,
+\[
+\mathbf{W}^{(l)}=
+\begin{bmatrix}
+w_{11}^{(l)} & \dots & w_{1m_l}^{(l)}\\
+\vdots & \ddots & \vdots\\
+w_{m_{l-1}1}^{(l)} & \dots & w_{m_{l-1}m_l}^{(l)}
+\end{bmatrix}
+\]
+
+\end{frame}
+
+\begin{frame}
+\begin{itemize}
+\item $\mathbf{z}^{(l)}=(\mathbf{W}^{(l)})^T\mathbf{y}^{(l-1)}+\mathbf{b}^{(l)}$ \pause
+\bigskip
+\item $\mathbf{y}^{(l)}=\mathbf{f}^{(l)}(\mathbf{z}^{(l)})$
+\bigskip
+\end{itemize}
+where, \pause
+\[
+\mathbf{f}^{(l)}=
+\begin{bmatrix}
+f_1^{(l)}\\
+\vdots\\
+f_{m_l}^{(l)}
+\end{bmatrix}
+\]
+and\pause
+\[
+\mathbf{f}^{(l)}(\mathbf{z}^{(l)})=
+\begin{bmatrix}
+f_1^{(l)}(z_1^{(l)})\\
+\vdots\\
+f_{m_l}^{(l)}(z_{m_l}^{(l)})
+\end{bmatrix}
+\] 
+
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+\begin{tikzpicture}
+
+\foreach \x in {0,2,4}
+  \foreach \y in {-2,-1,0,1,2}
+    \draw[ultra thick, blue] (\x,\y) circle (10pt);
+    
+\foreach \y in {-1,1}
+   \draw[ultra thick,brown] (-2,\y) circle (10pt);
+    
+\foreach \y in {-1,0,1}
+   \draw[ultra thick,red] (6,\y) circle (10pt);
+\foreach \x in {0,2}
+  \foreach \y in {-2,-1,0,1,2}
+    \foreach \d in {-2,-1,0,1,2}
+       \draw[->] (\x+0.4,\y) -- (\x+1.6,\d);
+\foreach \y in {-1,1}
+    \foreach \d in {-2,-1,0,1,2}
+       \draw[->] (-2+0.4,\y) -- (-2+1.6,\d);
+\foreach \y in {-1,0,1}
+    \foreach \d in {-2,-1,0,1,2}
+       \draw[->] (4+0.4,\d) -- (5.6,\y);
+\foreach \d in {-1,0,1}
+       \draw[->] (6.4,\d) -- (7,\d);
+      
+\node[ultra thick,red!80] at (1,1.5) {$\mathbf{W_{ij}^{(2)}}$}; 
+
+
+\draw[fill=green!50] (0,2) circle (10pt);
+\draw[fill=red!50] (2,1) circle (10pt); 
+\node[] at (0,2) {$i$};
+\node[] at (2,1) {$j$};     
+\pause
+\node[] at (-1,-3) {$W_{ij}^{(1)}$};
+\node[] at (1,-3) {$W_{ij}^{(2)}$};
+\node[] at (3,-3) {$W_{ij}^{(3)}$};
+\node[] at (5,-3) {$W_{ij}^{(4)}$};
+
+\pause
+
+\node[] at (-1,-4) {$b_j^{(1)}$};
+\node[] at (1,-4) {$b_j^{(2)}$};
+\node[] at (3,-4) {$b_j^{(3)}$};
+\node[] at (5,-4) {$b_j^{(4)}$};
+
+\pause
+
+\node[] at (-2,-5) {$y_j^{(0)}$};
+\node[] at (0,-5) {$y_j^{(1)}$};
+\node[] at (2,-5) {$y_j^{(2)}$};
+\node[] at (4,-5) {$y_j^{(3)}$};
+\node[] at (6,-5) {$y_j^{(4)}=y_{out}$};
+
+\pause
+
+\draw[rounded corners, ultra thick, fill=pink] (7,-1.2) rectangle (9,1.2);
+
+\foreach \x in {7.2,8, 8.8}
+  \draw[->] (\x,2) -- (\x,1.2);
+  
+\pause 
+  
+\node[above] at (7.2,2) {$d_1$};
+\node[above] at (8,2) {$d_2$};
+\node[above] at (8.8,2) {$d_3$};
+
+\node[] at (8,0) {$L^2\;Div$};
+
+\pause
+
+\foreach \d in {0}
+       \draw[->] (9,\d) -- (10,\d);
+\node[right] at (10,0) {$\mathcal{L}$};
+\end{tikzpicture}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+For real-valued output vector, we use $L^2$ norm for divergence which is
+\[
+Div(\mathbf{Y},\mathbf{d})=\|\mathbf{Y}-\mathbf{d}\|
+\] 
+For binary classifier with scalar output, $Y\in (0,1)$, the desire output is $0$ or $1$ and the cross entropy between the probability distribution $[Y,1-Y]$ and the ideal output probability $[d,1-d]$ is the \textbf{Kullback–Leibler} divergence, i.e.,
+\[
+Div(Y,d)=-d\log Y-(1-d)\log (1-Y)
+\]
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+\begin{tikzpicture}
+
+\foreach \x in {0,2,4}
+  \foreach \y in {-2,-1,0,1,2}
+    \draw[ultra thick, blue] (\x,\y) circle (10pt);
+    
+\foreach \y in {-1,1}
+   \draw[ultra thick,brown] (-2,\y) circle (10pt);
+    
+\foreach \y in {0}
+   \draw[ultra thick,red] (6,\y) circle (10pt);
+\foreach \x in {0,2}
+  \foreach \y in {-2,-1,0,1,2}
+    \foreach \d in {-2,-1,0,1,2}
+       \draw[->] (\x+0.4,\y) -- (\x+1.6,\d);
+\foreach \y in {-1,1}
+    \foreach \d in {-2,-1,0,1,2}
+       \draw[->] (-2+0.4,\y) -- (-2+1.6,\d);
+\foreach \y in {0}
+    \foreach \d in {-2,-1,0,1,2}
+       \draw[->] (4+0.4,\d) -- (5.6,\y);
+\foreach \d in {0}
+       \draw[->] (6.4,\d) -- (7,\d);
+       
+\node[ultra thick,red] at (1,1.5) {$\mathbf{W_{ij}^{(2)}}$}; 
+\node[] at (0,2) {$j$};
+\node[] at (2,1) {$i$};      
+
+\node[] at (-1,-3) {$W_{ij}^{(1)}$};
+\node[] at (1,-3) {$W_{ij}^{(2)}$};
+\node[] at (3,-3) {$W_{ij}^{(3)}$};
+\node[] at (5,-3) {$W_{ij}^{(5)}$};
+
+
+\node[] at (-1,-4) {$b_j^{(1)}$};
+\node[] at (1,-4) {$b_j^{(2)}$};
+\node[] at (3,-4) {$b_j^{(3)}$};
+\node[] at (5,-4) {$b_j^{(5)}$};
+
+\node[] at (-2,-5) {$y_j^{(0)}$};
+\node[] at (0,-5) {$y_j^{(1)}$};
+\node[] at (2,-5) {$y_j^{(2)}$};
+\node[] at (4,-5) {$y_j^{(3)}$};
+\node[] at (6,-5) {$y_j^{(4)}=y_i$};
+
+
+
+\draw[rounded corners, ultra thick, fill=pink] (7,-1.2) rectangle (9,1.2);
+
+\foreach \x in {8 }
+  \draw[->] (\x,2) -- (\x,1.2);
+  
+
+\node[above] at (8,2) {$d$};
+
+
+\node[] at (8,0) {$KL\;Div$};
+
+\foreach \d in {0}
+       \draw[->] (9,\d) -- (10,\d);
+\node[right] at (10,0) {$\mathcal{L}$};
+\end{tikzpicture}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Backpropagation}
+The goal of this section is to calculate $\frac{\partial\mathcal{L}}{\partial w_{ij}^{(1)}}$ recursively. 
+\[
+\begin{aligned}
+\frac{\partial \mathcal{L}}{\partial y_j^{(3)}}&=\frac{\partial \mathcal{L}}{\partial y}\frac{\partial y}{\partial y_j^{(4)}}\frac{\partial y_j^{(4)}}{\partial z_j^{(4)}}\frac{\partial z_j^{(4)}}{\partial y_j^{(3)}}
+\end{aligned}
+\]
+If we let $\delta y_j^{(l)}=\frac{\partial y}{\partial y_j^{(l)}}$ then,
+\[
+\begin{aligned}
+\frac{\partial \mathcal{L}}{\partial y_j^{(1)}}&=\frac{\partial \mathcal{L}}{\partial y}\delta y_j^{(1)}
+\end{aligned}
+\]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Backpropagation}
+On the other hand
+\[
+\begin{aligned}
+\frac{\partial \mathcal{L}}{\partial w_{ij}^{(1)}}=\frac{\partial \mathcal{L}}{\partial y}\frac{\partial y}{\partial y_j^{(4)}}&\frac{\partial y_j^{(4)}}{\partial z_j^{(4)}}\frac{\partial z_j^{(4)}}{\partial y_j^{(3)}}\\ \pause
+&\frac{\partial y_j^{(3)}}{\partial z_j^{(3)}}\frac{\partial z_j^{(3)}}{\partial y_j^{(2)}}\\ \pause
+&\frac{\partial y_j^{(2)}}{\partial z_j^{(2)}}\frac{\partial z_j^{(2)}}{\partial y_j^{(1)}}\\ \pause
+&\frac{\partial y_j^{(1)}}{\partial z_j^{(1)}}\frac{\partial z_j^{(1)}}{\partial w_{ij}^{(1)}}
+\end{aligned}
+\]
+
+\end{frame}
+
+
+\begin{frame}
+\begin{itemize}
+\item $\textbf{loss}=\mathcal{L}(\mathbf{y}^{(L)},\mathbf{d};\mathbf{W})$\pause
+\item $\mathbf{y}^{(L)}=\mathbf{f}^{(L)}(\mathbf{z}^{(L)})$\pause
+\item $\mathbf{z}^{(L)}=(\mathbf{W}^{(L)})^T\mathbf{y}^{(L-1)}+\mathbf{b}^{(L)}$ \pause
+\item $\vdots$
+\item $\mathbf{y}^{(l)}=\mathbf{f}^{(l)}(\mathbf{z}^{(l)})$\pause
+\item $\mathbf{z}^{(l)}=(\mathbf{W}^{(l)})^T\mathbf{y}^{(l-1)}+\mathbf{b}^{(l)}$ \pause
+\item $\vdots$
+\item $\mathbf{y}^{(1)}=\mathbf{f}^{(1)}(\mathbf{z}^{(1)})$\pause
+\item $\mathbf{z}^{(1)}=(\mathbf{W}^{(1)})^T\mathbf{y}^{(0)}+\mathbf{b}^{(1)}$ \pause
+
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+We want to compute $\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(l)}}$. But,
+\[
+\begin{aligned}
+\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(l)}}=\frac{\partial \mathcal{L}}{\partial \mathbf{y}^{(L)}}\frac{\partial \mathbf{y}^{(L)}}{\partial \mathbf{y}^{(l)}}\frac{\partial \mathbf{y}^{(l)}}{\partial \mathbf{z}^{(l)}}\frac{\partial \mathbf{z}^{(l)}}{\partial \mathbf{W}^{(l)}}
+\end{aligned}
+\]
+
+\end{frame}
+
+\begin{frame}
+We can compute $\frac{\partial \mathbf{y}^{(L)}}{\partial \mathbf{y}^{(l)}}$ by the chain rule as follow,
+\[
+\begin{aligned}
+\frac{\partial \mathbf{y}^{(L)}}{\partial \mathbf{y}^{(l)}}=\frac{\partial \mathbf{y}^{(L)}}{\partial \mathbf{z}^{(L)}}\frac{\partial \mathbf{z}^{(L)}}{\partial \mathbf{y}^{(L-1)}}\frac{\partial \mathbf{y}^{(L-1)}}{\partial \mathbf{y}^{(l)}}
+\end{aligned}
+\]
+By getting transpose we have
+\[
+\begin{aligned}
+\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(l)}}^T=\frac{\partial \mathbf{z}^{(l)}}{\partial \mathbf{W}^{(l)}}^T\frac{\partial \mathbf{y}^{(l)}}{\partial \mathbf{z}^{(l)}}^T\frac{\partial \mathbf{y}^{(L)}}{\partial \mathbf{y}^{(l)}}^T\frac{\partial \mathcal{L}}{\partial \mathbf{y}^{(L)}}^T
+\end{aligned}
+\]
+This is \textcolor{red}{Backpropagation}!
+\end{frame}
+
+\begin{frame}
+\begin{center}
+\begin{tikzpicture}[thick,fill opacity=.3,draw opacity=3]
+\draw[fill=red,rounded corners,] (1,-1) rectangle (3,1);
+\draw[->] (4,0) -- (3,0);
+\draw[->] (1,0.5) -- (0,1);
+\draw[->] (1,-0.5) -- (0,-1); \pause
+\node[right] at (4,0) {$\frac{\partial \mathcal{L}}{\partial y_j^{(l)}}$}; \pause
+\node[] at (2,0) {$\frac{\partial y_j^{(l)}}{\partial y_j^{(l-1)}}$};
+\pause
+\node[left] at (0,1) {$\frac{\partial \mathcal{L}}{\partial y_j^{(l-1)}}$};\pause
+\draw[->] (-1.5,1) -- (-3,1); \pause
+\draw[fill=red,rounded corners,] (-5,0) rectangle (-3,2);
+\pause
+\node[] at (-4,1) {$\frac{\partial y_j^{(l-1)}}{\partial y_j^{(l-2)}}$};
+\draw[->] (-5,1.5) -- (-6,2);
+\draw[->] (-5,0.5) -- (-6,0);\pause 
+\node[left] at (-6,2) {$\frac{\partial \mathcal{L}}{\partial y_j^{(l-2)}}$};
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{All types of Gradient Descent}
+\begin{enumerate}
+\item \textbf{Batch Gradient Descent:} uses entire dataset for one update.
+\bigskip
+\item \textbf{Minibatch Gradient Descent:} uses subsets of the dataset for one update.
+\bigskip 
+\item \textbf{Stochastic Gradient Descent (online):} uses single example for one update.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{Downsides}
+\begin{enumerate}
+\item \textbf{Batch Gradient Descent:} sensitivity to saddle points and time-complexity, choosing a proper learning rate can be difficult.
+\bigskip
+\item \textbf{Minibatch Gradient Descent:} does not guarantee good convergence.
+\bigskip 
+\item \textbf{Stochastic Gradient Descent (online):} time-complexity, stuck at local minima.
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Gradient}
+Let $\{(\mathbf{X_1},y_1),\dots,(\mathbf{X_N},y_N)\}$ be the training set. then the update rules are as follow,
+\begin{enumerate}
+\item \textbf{Batch Gradient Descent:} 
+\[
+\mathbf{W}_{k+1}=\mathbf{W}_k-\alpha\nabla_{\mathbf{W}} \frac{1}{N}\sum_{i=1}^N\mathcal{L}(\mathbf{X_i},y_i;\mathbf{W}_k)
+\]
+\item \textbf{Minibatch Gradient Descent:}
+ \[
+\mathbf{W}_{k+1}=\mathbf{W}_k-\alpha \nabla_{\mathbf{W}}\frac{1}{\textbf{batch size}}\sum_{i\in \textbf{minibatch}}\mathcal{L}(\mathbf{X_i},y_i;\mathbf{W}_k)
+\]
+\item \textbf{Stochastic Gradient Descent (online):} \[
+\mathbf{W}_{k+1}=\mathbf{W}_k-\alpha\nabla_{\mathbf{W}}\mathcal{L}(\mathbf{X_i},y_i;\mathbf{W}_k)
+\]
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}{}
+  \centering \Huge
+  \emph{Thank You}
+\end{frame}
+
+\end{document}
+
